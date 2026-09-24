@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="theme-color" content="#000000" />
+	<title>globban.com</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+	<style>
+		:root {
+			color-scheme: dark;
+			--ink: #f5f0df;
+			--acid: #d9ff5d;
+		}
+
+		* { box-sizing: border-box; }
+
+		html, body {
+			width: 100%;
+			height: 100%;
+			margin: 0;
+			overflow: hidden;
+			background: #000000;
+		}
+
+		body {
+			color: var(--ink);
+			font-family: "Press Start 2P", monospace;
+		}
+
+		.page-scroller {
+			position: relative;
+			z-index: 2;
+			height: 100svh;
+			overflow-y: auto;
+			scroll-snap-type: y mandatory;
+			scroll-behavior: smooth;
+			-webkit-overflow-scrolling: touch;
+		}
+
+		.screen {
+			position: relative;
+			display: flex;
+			height: 100svh;
+			min-height: 100svh;
+			overflow: hidden;
+			scroll-snap-align: start;
+			scroll-snap-stop: always;
+		}
+
+		.intro-screen {
+			align-items: center;
+			justify-content: center;
+			text-align: center;
+		}
+
+		.section-inner {
+			width: min(100% - 2.5rem, 72rem);
+			margin: auto;
+			padding: 4.5rem 0 3rem;
+		}
+
+		.section-kicker {
+			margin: 0 0 1.5rem;
+			color: var(--acid);
+			font-size: clamp(0.5rem, 1vw, 0.72rem);
+			line-height: 1.7;
+			letter-spacing: 0.12em;
+		}
+
+		.section-title {
+			max-width: 50rem;
+			margin: 0 0 3.5rem;
+			font-size: clamp(1.3rem, 4.2vw, 3.4rem);
+			line-height: 1.35;
+			letter-spacing: 0.01em;
+			text-shadow: 4px 4px 0 rgba(0, 0, 0, 0.55);
+		}
+
+		.project-list {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 1px;
+			border-top: 1px solid rgba(245, 240, 223, 0.32);
+		}
+
+		.project-link {
+			width: 100%;
+			min-width: 0;
+			display: grid;
+			grid-template-columns: 2.5rem minmax(0, 1fr) minmax(7rem, 10rem);
+			gap: 1rem;
+			align-items: center;
+			min-height: 7rem;
+			padding: 1.25rem 0.5rem;
+			border-bottom: 1px solid rgba(245, 240, 223, 0.32);
+			color: var(--ink);
+			text-decoration: none;
+			transition: color 180ms ease, padding 180ms ease, background 180ms ease;
+		}
+
+		.project-link:hover,
+		.project-link:focus-visible {
+			padding-left: 1rem;
+			color: var(--acid);
+			background: rgba(217, 255, 93, 0.06);
+			outline: none;
+		}
+
+		.project-number {
+			min-width: 0;
+			color: rgba(245, 240, 223, 0.45);
+			font-size: 0.62rem;
+		}
+
+		.project-name {
+			min-width: 0;
+			overflow-wrap: anywhere;
+			font-size: clamp(0.65rem, 1.4vw, 0.9rem);
+			line-height: 1.7;
+		}
+
+		.project-type {
+			min-width: 0;
+			color: rgba(245, 240, 223, 0.82);
+			font-family: Arial, sans-serif;
+			font-size: 0.72rem;
+			font-weight: 600;
+			letter-spacing: 0;
+			line-height: 1.45;
+			overflow-wrap: anywhere;
+			text-align: right;
+		}
+
+		.socials-screen .section-inner { display: flex; flex-direction: column; justify-content: center; }
+
+		.social-list {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.75rem 2rem;
+			max-width: 46rem;
+		}
+
+		.social-link {
+			color: var(--ink);
+			font-size: clamp(0.68rem, 1.5vw, 1rem);
+			line-height: 1.7;
+			text-decoration: none;
+			transition: color 180ms ease, transform 180ms ease;
+		}
+
+		.social-link:hover,
+		.social-link:focus-visible {
+			color: var(--acid);
+			transform: translateY(-3px);
+			outline: none;
+		}
+
+		#fluid-canvas {
+			position: fixed;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			display: block;
+			cursor: crosshair;
+		}
+
+		.veil {
+			position: fixed;
+			inset: 0;
+			pointer-events: none;
+			background: radial-gradient(circle at center, transparent 20%, rgba(0, 0, 0, 0.26) 100%);
+		}
+
+		.title-wrap {
+			width: 100%;
+			min-height: 100svh;
+			display: grid;
+			place-items: center;
+			pointer-events: none;
+			text-align: center;
+		}
+
+		.title-text {
+			display: inline-block;
+			pointer-events: auto;
+			color: var(--ink);
+			font: inherit;
+			font-size: clamp(1.15rem, 4vw, 3.5rem);
+			line-height: 1.35;
+			letter-spacing: 0.02em;
+			text-shadow: 4px 4px 0 rgba(0, 0, 0, 0.55);
+			transition: color 180ms ease, transform 180ms ease, text-shadow 180ms ease;
+		}
+
+		.title-text:hover {
+			color: var(--acid);
+			transform: translateY(-4px);
+			text-shadow: 5px 5px 0 rgba(0, 0, 0, 0.65);
+		}
+
+		.corner-note {
+			position: absolute;
+			left: 1.25rem;
+			bottom: 1.15rem;
+			color: rgba(245, 240, 223, 0.55);
+			font-size: 0.52rem;
+			line-height: 1.7;
+			letter-spacing: 0.08em;
+			pointer-events: none;
+		}
+
+		@media (max-width: 600px) {
+			.corner-note { font-size: 0.42rem; }
+			.project-list { grid-template-columns: 1fr; }
+			.project-link { min-height: 5.5rem; }
+			.project-type { max-width: 11rem; }
+			.section-inner { padding-top: 4.5rem; }
+		}
+	</style>
+</head>
+<body>
+	<canvas id="fluid-canvas" aria-label="Animated low-poly fluid background"></canvas>
+	<div class="veil" aria-hidden="true"></div>
+	<div class="page-scroller">
+		<main class="screen intro-screen">
+			<div class="title-wrap">
+				<div class="title-text">globban.com</div>
+				<div class="corner-note" aria-hidden="true">SCROLL TO EXPLORE</div>
+			</div>
+		</main>
+		<section class="screen projects-screen" aria-labelledby="projects-title">
+			<div class="section-inner">
+				<p class="section-kicker">01 / SELECTED WORK</p>
+				<h1 class="section-title" id="projects-title">Some projects</h1>
+				<nav class="project-list" aria-label="Projects">
+					<a class="project-link" href="https://algot.fun" target="_blank" rel="noreferrer">
+						<span class="project-number">01</span>
+						<span class="project-name">algot.fun</span>
+						<span class="project-type">One my personal code playgrounds, has some actually useful stuff tho</span>
+					</a>
+					<a class="project-link" href="https://math-25yk.onrender.com" target="_blank" rel="noreferrer">
+						<span class="project-number">02</span>
+						<span class="project-name">Evilgoogle</span>
+						<span class="project-type">Fork of Interstellar, like a proxy kit. Unblocks stuff</span>
+					</a>
+					<a class="project-link" href="https://driftr-1asi.onrender.com/public/index.html" target="_blank" rel="noreferrer">
+						<span class="project-number">03</span>
+						<span class="project-name">Driftr</span>
+						<span class="project-type">Web game where you drift. It's also online</span>
+					</a>
+					<a class="project-link" href="https://chat-4r5m.onrender.com/" target="_blank" rel="noreferrer">
+						<span class="project-number">04</span>
+						<span class="project-name">mongoDB chat</span>
+						<span class="project-type">Real-time chat application using mongoDB</span>
+					</a>
+				</nav>
+			</div>
+		</section>
+		<section class="screen socials-screen" aria-labelledby="socials-title">
+			<div class="section-inner">
+				<p class="section-kicker">02 / ELSEWHERE</p>
+				<h1 class="section-title" id="socials-title">where to find me</h1>
+				<nav class="social-list" aria-label="Social links">
+					<a class="social-link" href="https://github.com/globban" target="_blank" rel="noreferrer">GitHub ↗</a>
+					<a class="social-link" href="https://discordapp.com/users/964139892579917874" target="_blank" rel="noreferrer">Discord ↗</a>
+					<a class="social-link" href="mailto:algot@globban.com">Email ↗</a>
+				</nav>
+			</div>
+		</section>
+	</div>
+
+	<script type="importmap">
+		{ "imports": { "three": "https://unpkg.com/three@0.169.0/build/three.module.js" } }
+	</script>
+	<script type="module">
+		import * as THREE from "three";
+
+		const canvas = document.querySelector("#fluid-canvas");
+		const scene = new THREE.Scene();
+		const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+		camera.position.set(0, 0, 9.5);
+
+		const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+		renderer.setClearColor(0x000000, 1);
+		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+		renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+		const fluid = new THREE.Group();
+		fluid.rotation.x = -0.08;
+		scene.add(fluid);
+
+		const pointer = new THREE.Vector3(0, 0.2, 1);
+		const targetPointer = new THREE.Vector3(0, 0.2, 1);
+		const globeGeometry = new THREE.IcosahedronGeometry(2.18, 4);
+		const basePositions = Float32Array.from(globeGeometry.attributes.position.array);
+		const globeMaterial = new THREE.MeshStandardMaterial({
+			color: 0x56d62f,
+			emissive: 0x092d08,
+			emissiveIntensity: 0.72,
+			roughness: 0.27,
+			metalness: 0.05,
+			flatShading: true,
+			wireframe: true,
+			transparent: true,
+			opacity: 0.9
+		});
+		const globe = new THREE.Mesh(globeGeometry, globeMaterial);
+		fluid.add(globe);
+
+		const starCount = 180;
+		const starPositions = new Float32Array(starCount * 3);
+		for (let index = 0; index < starCount; index += 1) {
+			const offset = index * 3;
+			const angle = index * 2.39996;
+			const distance = 4.2 + (index % 13) * 0.42;
+			starPositions[offset] = Math.cos(angle) * distance * (1.15 + (index % 5) * 0.14);
+			starPositions[offset + 1] = Math.sin(angle * 1.73) * distance * 0.58;
+			starPositions[offset + 2] = -1 - (index % 11) * 0.48;
+		}
+		const starGeometry = new THREE.BufferGeometry();
+		starGeometry.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
+		const stars = new THREE.Points(
+			starGeometry,
+			new THREE.PointsMaterial({ color: 0xffffff, size: 0.035, sizeAttenuation: true, transparent: true, opacity: 0.72, blending: THREE.AdditiveBlending, depthWrite: false })
+		);
+		scene.add(stars);
+
+		const keyLight = new THREE.DirectionalLight(0xb9ff9d, 3.2);
+		keyLight.position.set(-3, 4, 5);
+		scene.add(keyLight);
+		const fillLight = new THREE.PointLight(0x1a7d20, 8, 9);
+		fillLight.position.set(2, -2, 3);
+		scene.add(fillLight);
+
+		const clock = new THREE.Clock();
+		let elapsed = 0;
+
+		function resize() {
+			const width = window.innerWidth;
+			const height = window.innerHeight;
+			camera.aspect = width / height;
+			camera.fov = width < 600 ? 48 : 38;
+			camera.updateProjectionMatrix();
+			renderer.setSize(width, height, false);
+		}
+
+		function updatePointer(event) {
+			targetPointer.set((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1, 1);
+			targetPointer.normalize();
+		}
+
+		window.addEventListener("pointermove", updatePointer);
+
+		window.addEventListener("resize", resize);
+		resize();
+
+		function animate() {
+			requestAnimationFrame(animate);
+			const delta = Math.min(clock.getDelta(), 0.05);
+			elapsed += delta;
+			const time = elapsed;
+
+			pointer.lerp(targetPointer, 0.08);
+			fluid.rotation.y += (pointer.x * 0.16 - fluid.rotation.y) * 0.035;
+			fluid.rotation.x += (-pointer.y * 0.12 - fluid.rotation.x) * 0.035;
+			const positions = globeGeometry.attributes.position;
+			for (let index = 0; index < positions.count; index += 1) {
+				const offset = index * 3;
+				const baseX = basePositions[offset];
+				const baseY = basePositions[offset + 1];
+				const baseZ = basePositions[offset + 2];
+				const length = Math.sqrt(baseX * baseX + baseY * baseY + baseZ * baseZ);
+				const normalX = baseX / length;
+				const normalY = baseY / length;
+				const normalZ = baseZ / length;
+				const wave = Math.sin(normalX * 7 + time * 0.9) * Math.sin(normalY * 9 - time * 0.65) * 0.075;
+				const secondaryWave = Math.sin(normalZ * 11 - time * 0.55) * 0.035;
+				const radius = 1 + wave + secondaryWave;
+				positions.setXYZ(index, baseX * radius, baseY * radius, baseZ * radius);
+			}
+			positions.needsUpdate = true;
+			globeGeometry.computeVertexNormals();
+
+			renderer.render(scene, camera);
+		}
+
+		animate();
+	</script>
+</body>
+</html>
